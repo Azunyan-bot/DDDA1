@@ -7,15 +7,21 @@ def calc_iou(a, b):
     # TODO: Please modify and fill the codes below to calculate the iou of the two boxes a and b
     ###################################################################
 
-    iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[:, 2]) - torch.max(torch.unsqueeze(a[:, 0], 1), b[:, 0])
-    ih = torch.min(torch.unsqueeze(a[:, 3], dim=1), b[:, 3]) - torch.max(torch.unsqueeze(a[:, 1], 1), b[:, 1])
-    iw = torch.clamp(iw, min=0)
-    ih = torch.clamp(ih, min=0)
+    x1 = torch.max(a[0], b[0])
+    y1 = torch.max(a[1], b[1])
+    x2 = torch.min(a[2], b[2])
+    y2 = torch.min(a[3], b[3])
 
-    intersection = iw * ih
+    # Calculate the area of intersection
+    intersection = torch.max(x2 - x1, torch.tensor(0)) * torch.max(y2 - y1, torch.tensor(0))
     
-    area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
-    ua = torch.unsqueeze((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), dim=1) + area - iw * ih
+    # Calculate the areas of the input boxes
+    area_a = (a[2] - a[0]) * (a[3] - a[1])
+    area_b = (b[2] - b[0]) * (b[3] - b[1])
+
+    # Calculate the area of the union
+    ua = area_a + area_b - intersection
+    
     ##################################################################
 
     ua = torch.clamp(ua, min=1e-8)
