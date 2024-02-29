@@ -124,7 +124,7 @@ def main(args=None):
 
         epoch_loss_list.append(np.mean(epoch_loss))
 
-        if (epoch_num + 1) % 10 == 0 or epoch_num + 1 == parser.epochs:
+        if (epoch_num + 1) % 1 == 0 or epoch_num + 1 == parser.epochs:
             print('Evaluating dataset')
             retinanet.eval()
             retinanet.training = False
