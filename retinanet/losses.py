@@ -2,32 +2,29 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-def calc_iou(anchors, boxs):
-
-    anchors_w = anchors[:, 2] - anchors[:, 0]
-    anchors_h = anchors[:, 3] - anchors[:, 1]
-    boxs_w = boxs[:, 2] - boxs[:, 0]
-    boxs_h = boxs[:, 3] - boxs[:, 1]
-
-    anchors_area = anchors_w * anchors_h
-    boxs_area = boxs_w * boxs_h
-
-    overlap_x1 = torch.max(torch.unsqueeze(anchors[:, 0], dim=1), boxs[:, 0])
-    overlap_y1 = torch.max(torch.unsqueeze(anchors[:, 1], dim=1), boxs[:, 1])
-    overlap_x2 = torch.min(torch.unsqueeze(anchors[:, 2], dim=1), boxs[:, 2])
-    overlap_y2 = torch.min(torch.unsqueeze(anchors[:, 3], dim=1), boxs[:, 3])
-
-    overlap_w = torch.clamp(overlap_x2 - overlap_x1, min=0) 
-    overlap_h = torch.clamp(overlap_y2 - overlap_y1, min=0)
-    overlap_area = overlap_w * overlap_h 
+def calc_iou(a, b):
+    ###################################################################
+    # TODO: Please modify and fill the codes below to calculate the iou of the two boxes a and b
+    ###################################################################
     
+    area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
 
-    collection_area = torch.unsqueeze(anchors_area, dim=1) + boxs_area - overlap_area
-    collection_area = torch.clamp(collection_area, min=1e-8)
+    iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[:, 2]) - torch.max(torch.unsqueeze(a[:, 0], 1), b[:, 0])
+    ih = torch.min(torch.unsqueeze(a[:, 3], dim=1), b[:, 3]) - torch.max(torch.unsqueeze(a[:, 1], 1), b[:, 1])
 
-    iou = overlap_area / collection_area
+    iw = torch.clamp(iw, min=0)
+    ih = torch.clamp(ih, min=0)
 
-    return iou
+    ua = torch.unsqueeze((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), dim=1) + area - iw * ih
+    intersection = iw * ih
+
+    ##################################################################
+
+    ua = torch.clamp(ua, min=1e-8)
+
+    IoU = intersection / ua
+
+    return IoU
 
 class FocalLoss(nn.Module):
 
