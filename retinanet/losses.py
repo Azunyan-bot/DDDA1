@@ -3,44 +3,26 @@ import torch
 import torch.nn as nn
 
 def calc_iou(anchors, boxs):
-    '''
-    计算一张图像产生的所有anchor和该图annotations中的bounding box之间的IoU
-    :param anchors: [-1, 4], [x1, y1, x2, y2]
-    :param boxs: annotations [-1, 4], [x1, y1, x2, y2]
-    '''
-    anchors_w = anchors[:, 2] - anchors[:, 0] # [n, ]
-    anchors_h = anchors[:, 3] - anchors[:, 1] # [n, ]
-    boxs_w = boxs[:, 2] - boxs[:, 0] # [m, ]
-    boxs_h = boxs[:, 3] - boxs[:, 1] # [m, ]
+
+    anchors_w = anchors[:, 2] - anchors[:, 0]
+    anchors_h = anchors[:, 3] - anchors[:, 1]
+    boxs_w = boxs[:, 2] - boxs[:, 0]
+    boxs_h = boxs[:, 3] - boxs[:, 1]
 
     anchors_area = anchors_w * anchors_h
     boxs_area = boxs_w * boxs_h
 
-    '''
-    # torch.unsqueeze(anchors[:, 0], dim=1) 
-    # 将anchors的x1的shape进行转变, [n, ] -> [n, 1]
-    # boxs的x1: [m, ]
-    # 使用torch.max()函数，对不同维度的向量进行比较，可以得到一一对应的对比结果
-    # overlap_x1: [n, m]
-    '''
     overlap_x1 = torch.max(torch.unsqueeze(anchors[:, 0], dim=1), boxs[:, 0])
     overlap_y1 = torch.max(torch.unsqueeze(anchors[:, 1], dim=1), boxs[:, 1])
     overlap_x2 = torch.min(torch.unsqueeze(anchors[:, 2], dim=1), boxs[:, 2])
     overlap_y2 = torch.min(torch.unsqueeze(anchors[:, 3], dim=1), boxs[:, 3])
 
-    '''
-    overlap_w和overlap_h可能会出现负数的情况，表示anchor和anno没有交集
-    这时需要将其w和h置为0，因为之后算交集面积的时候，负数会带来困扰
-    '''
     overlap_w = torch.clamp(overlap_x2 - overlap_x1, min=0) 
     overlap_h = torch.clamp(overlap_y2 - overlap_y1, min=0)
     overlap_area = overlap_w * overlap_h 
     
-    # torch.unsqueeze(anchors_area, dim=1) + boxs_area
-    # 同理，将anchors_area进行转变 [n, ] -> [n, 1] 与[m, ] 的boxs_area相加
-    # 得到[n, m]
+
     collection_area = torch.unsqueeze(anchors_area, dim=1) + boxs_area - overlap_area
-    # 防止最后计算出来的IoU过小而导致log()函数值输出'nan'
     collection_area = torch.clamp(collection_area, min=1e-8)
 
     iou = overlap_area / collection_area
