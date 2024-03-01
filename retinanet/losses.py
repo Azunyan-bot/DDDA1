@@ -139,7 +139,7 @@ class FocalLoss(nn.Module):
 
             focal_weight = alpha_factor * torch.pow(focal_weight, gamma)
 
-            bce = -(torch.log(1.0 - classification))
+            bce = -(targets * torch.log(classification) + (1.0 - targets) * torch.log(1.0 - classification))
 
             cls_loss = focal_weight * bce
 
