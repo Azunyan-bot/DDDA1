@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-def cal_iou(anchors, boxs):
+def calc_iou(anchors, boxs):
     '''
     计算一张图像产生的所有anchor和该图annotations中的bounding box之间的IoU
     :param anchors: [-1, 4], [x1, y1, x2, y2]
