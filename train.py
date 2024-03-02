@@ -54,10 +54,11 @@ def main(args=None):
             retinanet = retinanet.cuda()
 
     retinanet.training = True
-    optimizer = optim.Adam(retinanet.parameters(), lr=1e-4)
+    optimizer = optim.Adam(retinanet.parameters(), lr=1e-5)
 
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[48, 64])
-
+    #scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[48, 64])
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, verbose=True)
+    
     loss_hist = collections.deque(maxlen=500)
     epoch_loss_list = []
 
@@ -120,7 +121,7 @@ def main(args=None):
             del classification_loss
             del regression_loss
 
-        scheduler.step()
+        scheduler.step(np.mean(epoch_loss))
 
         epoch_loss_list.append(np.mean(epoch_loss))
 
